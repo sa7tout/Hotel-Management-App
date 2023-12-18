@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="640.0" prefWidth="1350.0" style="-fx-background-color: grey;" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.hotel.MainPanelController">
+   <fx:define>
+      <!-- Define a context menu for user information -->
+      <ContextMenu fx:id="userContextMenu">
+         <!-- User information content goes here -->
+         <items>
+            <Menu style="-fx-text-fill: black;" text="User Information">
+               <items>
+                  <MenuItem style="-fx-text-fill: white;" text="Username: YOUNESS" />
+                  <MenuItem style="-fx-text-fill: white;" text="Role: Admin" />
+                  <!-- Add more user information as needed -->
+               </items>
+            </Menu>
+            <SeparatorMenuItem />
+            <MenuItem onAction="#logout" style="-fx-text-fill: white;" text="Logout" />
+         </items>
+      </ContextMenu>
+   </fx:define>
+
+   <left>
+      <VBox prefHeight="601.0" prefWidth="160.0" spacing="10" style="-fx-background-color: #404040;" BorderPane.alignment="CENTER">
+         <children>
+            <Accordion prefHeight="601.0" prefWidth="160.0" style="-fx-background-color: #404040;" BorderPane.alignment="CENTER">
+               <panes>
+                  <!-- TitledPane for managing employees -->
+                  <TitledPane fx:id="employeePane" style="-fx-background-color: #404040;-fx-border-style: solid; -fx-border-width: 2; -fx-border-color: #404040;" text="Manage Employees">
+                     <content>
+                        <VBox spacing="5" style="-fx-background-color: #404040;">
+                           <!-- Add Employee Button -->
+                           <Button text="Add Employee" onAction="#addEmployee" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
+                           <!-- List Employees Button -->
+                           <Button text="List Employees" onAction="#listEmployees" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10; -fx-cursor: hand;"/>
+                           <!-- Other employee management options can be added here -->
+                        </VBox>
+                     </content>
+                     <font>
+                        <Font name="Segoe UI Bold" size="14.0" />
+                     </font>
+                  </TitledPane>
+
+                  <!-- TitledPane for managing clients -->
+                  <TitledPane fx:id="clientPane" style="-fx-background-color: #404040;-fx-border-style: solid; -fx-border-width: 2; -fx-border-color: #404040;" text="Manage Clients">
+                     <content>
+                        <VBox spacing="5" style="-fx-background-color: #404040;">
+                           <!-- Add Client Button -->
+                           <Button text="Add Client" onAction="#addClient" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
+                           <!-- List Clients Button -->
+                           <Button text="List Clients" onAction="#listClients" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
+                           <!-- Other client management options can be added here -->
+                        </VBox>
+                     </content>
+                     <font>
+                        <Font name="Segoe UI Bold" size="14.0" />
+                     </font>
+                  </TitledPane>
+
+                  <!-- TitledPane for managing room availability -->
+                  <TitledPane fx:id="roomPane" style="-fx-background-color: #404040;-fx-border-style: solid; -fx-border-width: 2; -fx-border-color: #404040;" text="Manage Room Availability">
+                     <content>
+                        <VBox spacing="5" style="-fx-background-color: #404040;">
+                           <!-- Add Room Button -->
+                           <Button text="Add Room" onAction="#addRoom" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
+                           <!-- Check Room Availability Button -->
+                           <Button text="Check Availability" onAction="#checkAvailability" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
+                           <!-- List Rooms Button -->
+                           <Button text="List Rooms" onAction="#listRooms" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
+                           <!-- Other room management options can be added here -->
+                        </VBox>
+                     </content>
+                     <font>
+                        <Font name="Segoe UI Bold" size="14.0" />
+                     </font>
+                  </TitledPane>
+
+                  <!-- TitledPane for managing reservations -->
+                  <TitledPane fx:id="reservationPane" style="-fx-background-color: #404040;-fx-border-style: solid; -fx-border-width: 2; -fx-border-color: #404040;" text="Manage Reservations">
+                     <content>
+                        <VBox spacing="5" style="-fx-background-color: #404040;">
+                           <!-- Make Reservation Button -->
+                           <Button text="Make Reservation" onAction="#makeReservation" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
+                           <!-- List Reservations Button -->
+                           <Button text="List Reservations" onAction="#listReservations" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
+                           <!-- Other reservation management options can be added here -->
+                        </VBox>
+                     </content>
+                     <font>
+                        <Font name="Segoe UI Bold" size="14.0" />
+                     </font>
+                  </TitledPane>
+               </panes>
+            </Accordion>
+         </children>
+      </VBox>
+   </left>
+
+   <top>
+      <HBox alignment="CENTER_RIGHT" prefHeight="39.0" prefWidth="1360.0" style="-fx-background-color: #2b2a26;" BorderPane.alignment="CENTER_LEFT">
+
+            <Label fx:id="logoLabel" text="VAGO PORTAL" style="-fx-background-color: #2b2a26; -fx-text-fill: #40A7FF; -fx-font-size: 13px; -fx-padding: 5 500;" alignment="TOP_LEFT"/>
+
+         <HBox prefHeight="100.0" prefWidth="50.0">
+            <children>
+               <Button id="userIcon" onAction="#showUserInfo" style="-fx-background-color: transparent;-fx-cursor: hand;">
+                  <graphic>
+                     <ImageView fitHeight="30" fitWidth="25">
+                        <!-- Replace 'user_icon.png' with the actual path to your user icon -->
+                        <image>
+                           <Image url="@../../../assets/user_person_flat_and_glyph.png" />
+                        </image>
+                     </ImageView>
+                  </graphic>
+               </Button>
+            </children></HBox>
+
+         <children>
+            <Button fx:id="logout" mnemonicParsing="false" onAction="#close" prefHeight="18.0" prefWidth="74.0" style="-fx-text-fill: #f0f0f0;-fx-cursor: hand;" styleClass="bt" stylesheets="@mainpanel.css" text="Log Out" textAlignment="JUSTIFY">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <HBox.margin>
+                  <Insets right="4.0" />
+               </HBox.margin>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+
+         </children>
+         <BorderPane.margin>
+            <Insets right="5.0" />
+         </BorderPane.margin>
+      </HBox>
+
+   </top>
+   <center>
+
+   </center>
+</BorderPane>

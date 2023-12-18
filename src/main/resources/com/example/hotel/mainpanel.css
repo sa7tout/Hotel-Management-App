@@ -1,0 +1,36 @@
+
+.parent {
+    -fx-background-color: #fff
+}
+.sidebar {
+    -fx-background-color: gray
+}
+.bt {
+    -fx-background-color: #404040;
+}
+.bt:hover {
+    -fx-background-color: #303030; 
+}
+.box {   
+}
+
+.custom-titled-pane {
+    -fx-background-color: #404040; /* Dark background color for the TitledPane */
+    -fx-border-style: solid;
+    -fx-border-width: 2;
+    -fx-border-color: #404040;
+}
+
+.titled-pane.highlighted {
+    -fx-background-color: #40A7FF;
+    -fx-border-color: #404040;
+}
+
+
+.custom-titled-pane .arrow-button {
+    -fx-background-color: #2b2a26;
+}
+
+.custom-titled-pane .titled-pane-content {
+    -fx-background-color: #2b2a26;
+}
