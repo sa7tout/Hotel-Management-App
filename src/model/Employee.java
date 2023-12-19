@@ -14,13 +14,17 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.example.hotel.MainPanelController;
 import javafx.util.Callback;
 
+import java.io.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Employee {
     private int employeeID;
@@ -417,6 +421,78 @@ public class Employee {
 
             AlertHelper.showAlert(Alert.AlertType.INFORMATION, null, "Success", "Employee added successfully!");}
         }
+
+        public static void exportToCSV() {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save CSV File");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+            File selectedFile = fileChooser.showSaveDialog(null);
+
+            if (selectedFile != null) {
+                try (PrintWriter writer = new PrintWriter(selectedFile)) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("EmployeeID,FirstName,LastName,Email,Department,Position,HireDate\n");
+
+                    for (Employee employee : originalEmployeeList) {
+                        sb.append(String.format("%d,%s,%s,%s,%s,%s,%s\n",
+                                employee.getEmployeeID(),
+                                employee.getFirstName(),
+                                employee.getLastName(),
+                                employee.getEmail(),
+                                employee.getDepartment(),
+                                employee.getPosition(),
+                                employee.getHireDate()));
+                    }
+
+                    writer.write(sb.toString());
+                    AlertHelper.showAlert(Alert.AlertType.INFORMATION, null, "Success", "Employees exported to CSV successfully!");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    AlertHelper.showAlert(Alert.AlertType.ERROR, null, "Error", "Error exporting employees to CSV.");
+                }
+            }
+        }
+
+        public static void importFromCSV(File file) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                List<Employee> importedEmployees = reader.lines()
+                        .skip(1) // skip header
+                        .map(line -> {
+                            String[] parts = line.split(",");
+                            int employeeID = Integer.parseInt(parts[0]);
+                            String firstName = parts[1];
+                            String lastName = parts[2];
+                            String email = parts[3];
+                            String department = parts[4];
+                            String position = parts[5];
+                            String hireDate = parts[6];
+                            return new Employee(employeeID, firstName, lastName, email, department, position, hireDate);
+                        })
+                        .collect(Collectors.toList());
+
+                // Add the imported employees to the table
+                originalEmployeeList.addAll(importedEmployees);
+                employeeTable.setItems(originalEmployeeList);
+
+                // Insert each imported employee to the database
+                for (Employee employee : importedEmployees) {
+                    submitEmployeeDetails(
+                            employee.getFirstName(),
+                            employee.getLastName(),
+                            employee.getEmail(),
+                            employee.getDepartment(),
+                            employee.getPosition(),
+                            employee.getHireDate()
+                    );
+                }
+
+                AlertHelper.showAlert(Alert.AlertType.INFORMATION, null, "Success", "Employees imported from CSV successfully!");
+            } catch (IOException | NumberFormatException e) {
+                e.printStackTrace();
+                AlertHelper.showAlert(Alert.AlertType.ERROR, null, "Error", "Error importing employees from CSV.");
+            }
+        }
+
 
 
 

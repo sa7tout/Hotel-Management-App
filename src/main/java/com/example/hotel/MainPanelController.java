@@ -16,9 +16,11 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
@@ -298,8 +300,12 @@ public class MainPanelController implements Initializable {
 
         VBox vbox = new VBox();
 
+        HBox searchAndButtonsBox = new HBox(); // Create a new HBox for search and buttons
+        HBox.setHgrow(searchAndButtonsBox, Priority.ALWAYS); // Allow HBox to grow horizontally
+
+        // Create search field
         TextField searchField = new TextField();
-        searchField.setPromptText("Search employees...");
+        searchField.setPromptText("Search employees");
 
         searchField.setOnKeyReleased(e -> {
             if (e.getCode() == KeyCode.BACK_SPACE || e.getCode() == KeyCode.ENTER) {
@@ -309,7 +315,32 @@ public class MainPanelController implements Initializable {
 
         searchField.setOnKeyPressed(e -> handleEmployeeSearchAction(searchField.getText()));
 
-        vbox.getChildren().add(searchField);
+        // Create export button
+        Button exportButton = new Button("Export to CSV");
+        exportButton.setOnAction(e -> {
+            // Call exportToCSV method from EmployeeTable
+            Employee.EmployeeTable.exportToCSV();
+        });
+
+        // Create import button
+        Button importButton = new Button("Import from CSV");
+        importButton.setOnAction(e -> {
+            // Configure the FileChooser
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv"));
+
+            // Show the file chooser dialog
+            File selectedFile = fileChooser.showOpenDialog(borderPane.getScene().getWindow());
+            if (selectedFile != null) {
+                // Call importFromCSV method from EmployeeTable and pass the selected File object
+                Employee.EmployeeTable.importFromCSV(selectedFile);
+            }
+        });
+
+        // Add search field and buttons to the HBox
+        searchAndButtonsBox.getChildren().addAll(searchField, exportButton, importButton);
+
+        vbox.getChildren().add(searchAndButtonsBox); // Add HBox to VBox
         vbox.getChildren().add(Employee.EmployeeTable.getEmployeeTable());
 
         VBox.setVgrow(Employee.EmployeeTable.getEmployeeTable(), Priority.ALWAYS);
