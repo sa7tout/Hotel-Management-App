@@ -2,23 +2,30 @@ package model;
 
 import com.example.hotel.AlertHelper;
 import com.example.hotel.DbConnection;
+import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static model.Room.RoomTable.getAllRooms;
 
 public class Reservation {
     private SimpleIntegerProperty reservationId;
@@ -33,7 +40,7 @@ public class Reservation {
     public Reservation(int reservationId, String referenceNumber, int roomNumber, Date checkinDate, Date checkoutDate,
                        int guestId, int numberOfGuests, String reservationStatus) {
         this.reservationId = new SimpleIntegerProperty(reservationId);
-        this.referenceNumber = new SimpleStringProperty(ReservationGenerator.generateUniqueReservationReference());
+        this.referenceNumber = new SimpleStringProperty(referenceNumber);
         this.roomNumber = new SimpleIntegerProperty(roomNumber);
         this.checkinDate = new SimpleObjectProperty<>(checkinDate);
         this.checkoutDate = new SimpleObjectProperty<>(checkoutDate);
@@ -44,7 +51,14 @@ public class Reservation {
 
     // Default constructor without parameters
     public Reservation() {
-        // Provide default values or leave fields uninitialized
+        this.reservationId = new SimpleIntegerProperty();
+        this.referenceNumber = new SimpleStringProperty(ReservationGenerator.generateUniqueReservationReference());
+        this.roomNumber = new SimpleIntegerProperty();
+        this.checkinDate = new SimpleObjectProperty<>();
+        this.checkoutDate = new SimpleObjectProperty<>();
+        this.guestId = new SimpleIntegerProperty();
+        this.numberOfGuests = new SimpleIntegerProperty();
+        this.reservationStatus = new SimpleStringProperty();
     }
 
     public int getReservationId() {
@@ -141,21 +155,6 @@ public class Reservation {
 
     public SimpleStringProperty reservationStatusProperty() {
         return reservationStatus;
-    }
-
-    public void manageReservation() {
-        // Placeholder for manage reservation functionality
-        // You may implement logic to manage reservation details
-    }
-
-    public void cancelReservation() {
-        // Placeholder for cancel reservation functionality
-        // You may implement logic to cancel a reservation
-    }
-
-    public void viewReservationDetails() {
-        // Placeholder for view reservation details functionality
-        // You may implement logic to display reservation details
     }
 
 
@@ -403,11 +402,191 @@ public class Reservation {
 
             detailsStage.showAndWait();
         }
+        public static Room getRoomById(int roomId) {
+            // You need to implement the logic to retrieve the Room from the database or any data source
+            // For demonstration purposes, I'll assume you have a getAllRooms() method in your DbConnection class
+
+            List<Room> allRooms = DbConnection.getAllRooms(DbConnection.getConnection());
+            return allRooms.stream().filter(room -> room.getRoomNumber() == roomId).findFirst().orElse(null);
+        }
+
 
         private static void manageReservation(Reservation reservation) {
-            // Placeholder for manage reservation functionality
-            // You may implement logic to manage reservation details
+            // Create the dialog
+            Dialog<Boolean> dialog = new Dialog<>();
+            dialog.setTitle("Manage Reservation");
+            dialog.setHeaderText("Manage Reservation " + reservation.getReservationId());
+
+            // Set the button types
+            ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+            ButtonType deleteButtonType = new ButtonType("Delete", ButtonBar.ButtonData.FINISH);
+            dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, deleteButtonType, ButtonType.CANCEL);
+
+            // Create the reservation form grid
+            GridPane grid = new GridPane();
+            grid.setHgap(10);
+            grid.setVgap(10);
+
+            ComboBox<Room> roomComboBox = new ComboBox<>(DbConnection.getAvailableRooms(DbConnection.getConnection()));
+            roomComboBox.setPromptText("Select Room");
+            roomComboBox.setConverter(new StringConverter<>() {
+                @Override
+                public String toString(Room room) {
+                    return room != null ? String.valueOf(room.getRoomNumber()) : "";
+                }
+
+                @Override
+                public Room fromString(String string) {
+                    // You may need to implement this method if necessary
+                    return null;
+                }
+            });
+
+            ChoiceBox<Integer> guestsChoiceBox = new ChoiceBox<>();
+            guestsChoiceBox.setDisable(true); // Disabled by default
+
+            // Event listener for room selection
+            roomComboBox.setOnAction(e -> {
+                Room selectedRoom = roomComboBox.getValue();
+                if (selectedRoom != null) {
+                    int maxGuests = DbConnection.getRoomCapacityByNumber(DbConnection.getConnection(), selectedRoom.getRoomNumber());
+                    guestsChoiceBox.setDisable(false); // Enable the ChoiceBox
+                    guestsChoiceBox.setValue(1); // Set a default value
+                    guestsChoiceBox.getItems().clear();
+                    guestsChoiceBox.getItems().addAll(IntStream.rangeClosed(1, maxGuests).boxed().collect(Collectors.toList()));
+                }
+            });
+
+            DatePicker checkinDatePicker = new DatePicker(reservation.getCheckinDate().toLocalDate());
+            DatePicker checkoutDatePicker = new DatePicker(reservation.getCheckoutDate().toLocalDate());
+
+            grid.add(new Label("Room:"), 0, 0);
+            grid.add(roomComboBox, 1, 0);
+            grid.add(new Label("Check-In Date:"), 0, 1);
+            grid.add(checkinDatePicker, 1, 1);
+            grid.add(new Label("Check-Out Date:"), 0, 2);
+            grid.add(checkoutDatePicker, 1, 2);
+            grid.add(new Label("Number of Guests:"), 0, 3);
+            grid.add(guestsChoiceBox, 1, 3);
+
+            // Populate the dialog with the reservation details
+            roomComboBox.setValue(getRoomById(reservation.getRoomNumber()));
+            checkinDatePicker.setValue(reservation.getCheckinDate().toLocalDate());
+            checkoutDatePicker.setValue(reservation.getCheckoutDate().toLocalDate());
+            guestsChoiceBox.setValue(reservation.getNumberOfGuests());
+
+            // Enable/disable Save button based on the reservation status
+            Node saveButton = dialog.getDialogPane().lookupButton(saveButtonType);
+            saveButton.setDisable(reservation.getReservationStatus().equalsIgnoreCase("Confirmed"));
+
+            // Event handler for check-in date selection
+            checkinDatePicker.setOnAction(e -> {
+                LocalDate checkInDate = checkinDatePicker.getValue();
+                LocalDate checkOutDate = checkoutDatePicker.getValue();
+
+                if (checkInDate != null && (checkOutDate == null || checkInDate.isBefore(checkOutDate))) {
+                    // Update the available dates in the check-out date picker
+                    checkoutDatePicker.setDayCellFactory(picker -> new DateCell() {
+                        public void updateItem(LocalDate date, boolean empty) {
+                            super.updateItem(date, empty);
+                            setDisable(date.isBefore(LocalDate.now()) || date.isBefore(checkInDate));
+                        }
+                    });
+                }
+            });
+
+            // Event handler for check-out date selection
+            checkoutDatePicker.setOnAction(e -> {
+                LocalDate checkInDate = checkinDatePicker.getValue();
+                LocalDate checkOutDate = checkoutDatePicker.getValue();
+
+                if (checkOutDate != null && (checkInDate == null || checkOutDate.isAfter(checkInDate))) {
+                    // Update the available dates in the check-in date picker
+                    checkinDatePicker.setDayCellFactory(picker -> new DateCell() {
+                        public void updateItem(LocalDate date, boolean empty) {
+                            super.updateItem(date, empty);
+                            setDisable(date.isBefore(LocalDate.now().plusDays(1)) || date.isAfter(checkOutDate));
+                        }
+                    });
+                }
+            });
+
+            // Set the grid into the dialog pane
+            dialog.getDialogPane().setContent(grid);
+
+            // Request focus on the roomComboBox initially
+            Platform.runLater(() -> roomComboBox.requestFocus());
+
+            // Convert the result to a reservation when the save button is clicked
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == saveButtonType) {
+                    // Validate inputs before saving
+                    if (validateReservationInputs(roomComboBox, checkinDatePicker, checkoutDatePicker, guestsChoiceBox)) {
+                        reservation.setRoomNumber(roomComboBox.getValue().getRoomNumber());
+                        reservation.setCheckinDate(Date.valueOf(checkinDatePicker.getValue()));
+                        reservation.setCheckoutDate(Date.valueOf(checkoutDatePicker.getValue()));
+                        reservation.setNumberOfGuests(guestsChoiceBox.getValue());
+                        DbConnection.updateReservation(DbConnection.getConnection(), reservation);
+                        originalReservationList = getAllReservations();
+                        reservationTable.setItems(originalReservationList);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else if (dialogButton == deleteButtonType) {
+                    // Delete the reservation
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("Delete Reservation");
+                    alert.setHeaderText("Delete Reservation " + reservation.getReservationId());
+                    alert.setContentText("Are you sure you want to delete this reservation?");
+
+                    Optional<ButtonType> result = alert.showAndWait();
+                    if (result.isPresent() && result.get() == ButtonType.OK) {
+                        // User confirmed deletion, delete the reservation from the database
+                        DbConnection.deleteReservationByReferenceNumber(DbConnection.getConnection(), reservation.getReferenceNumber());
+                        originalReservationList = getAllReservations();
+                        reservationTable.setItems(originalReservationList);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return null;
+            });
+
+            // Show the dialog and wait for the user's input
+            Optional<Boolean> result = dialog.showAndWait();
         }
+
+
+
+        private static boolean validateReservationInputs(ComboBox<Room> roomComboBox, DatePicker checkinDatePicker,
+                                                         DatePicker checkoutDatePicker, ChoiceBox<Integer> numberOfGuestsField) {
+            // Validate Room Selection
+            if (roomComboBox.getValue() == null) {
+                AlertHelper.showAlert(Alert.AlertType.ERROR, null, "Error", "Please select a room.");
+                return false;
+            }
+
+            // Validate Number of Guests
+            if (numberOfGuestsField.getValue() == null) {
+                AlertHelper.showAlert(Alert.AlertType.ERROR, null, "Error", "Please enter the number of guests.");
+                return false;
+            }
+
+            // Validate Check-In and Check-Out Dates
+            if (checkinDatePicker.getValue() == null || checkoutDatePicker.getValue() == null) {
+                AlertHelper.showAlert(Alert.AlertType.ERROR, null, "Error", "Please select both check-in and check-out dates.");
+                return false;
+            }
+
+            return true;
+        }
+
+
+
+
+
 
         private static void cancelReservation(Reservation reservation) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);

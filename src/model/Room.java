@@ -94,8 +94,9 @@ public class Room {
     }
 
     public void setGuestId(Integer guestId) {
-        this.guestId = guestId;
+        this.guestId = (guestId != null) ? guestId : 0;
     }
+
 
     public SimpleIntegerProperty roomNumberProperty() {
         return roomNumber;
@@ -125,20 +126,6 @@ public class Room {
         return pricePerNight;
     }
 
-    public void checkRoomAvailabilityAndBookRooms() {
-        // Placeholder for check room availability and book rooms functionality
-        // You may implement logic to check if the room is available and book it for a guest
-    }
-
-    public void manageRoomInventoryAndMaintenance() {
-        // Placeholder for manage room inventory and maintenance functionality
-        // You may implement logic to manage room inventory and maintenance tasks
-    }
-
-    public void adjustRoomRatesAndPromotions() {
-        // Placeholder for adjust room rates and promotions functionality
-        // You may implement logic to adjust room rates and promotions based on certain criteria
-    }
 
 
     public class RoomTable {
@@ -228,7 +215,7 @@ public class Room {
                         bookButton.setDisable(!isRoomAvailable);
 
                         // Set the "Clear" button disabled if the room is not available
-                        clearButton.setDisable(!isRoomAvailable);
+                        clearButton.setDisable(isRoomAvailable);
 
                         // Add only the "View," "Book," and "Clear" buttons to the HBox
                         HBox buttonsBox = new HBox(viewButton, bookButton, clearButton);
@@ -628,4 +615,5 @@ public class Room {
         }
 
     }
+
 }

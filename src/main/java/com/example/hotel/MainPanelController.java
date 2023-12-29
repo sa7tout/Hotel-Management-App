@@ -23,6 +23,7 @@ import model.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -30,6 +31,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static model.Employee.EmployeeTable.filterEmployees;
 import static model.Employee.EmployeeTable.submitEmployeeDetails;
@@ -144,33 +147,6 @@ public class MainPanelController implements Initializable {
         stage.getIcons().add(new Image(HotelApplication.class.getResource("/assets/vagologo.png").toExternalForm()));
         stage.show();
     }
-    @FXML
-    private void manageEmployees(ActionEvent e) {
-        clear();
-    }
-
-    @FXML
-    private void manageClients(ActionEvent e) {
-        clear();
-    }
-
-    @FXML
-    private void manageRoomAvailability(ActionEvent e) {
-        clear();
-    }
-
-    @FXML
-    private void manageReservations(ActionEvent e) {
-        clear();
-    }
-
-    @FXML
-    private void exportEmployees(ActionEvent e) {
-    }
-
-    @FXML
-    private void importEmployees(ActionEvent e) {
-    }
 
     public void addEmployee(ActionEvent actionEvent) {
         clear();
@@ -250,7 +226,9 @@ public class MainPanelController implements Initializable {
             if (field instanceof TextField) {
                 ((TextField) field).clear();
             } else if (field instanceof DatePicker) {
-                ((DatePicker) field).setValue(null);
+                ((DatePicker) field).getEditor().clear();
+            } else if (field instanceof ComboBox) {
+                ((ComboBox<?>) field).getSelectionModel().clearSelection();
             }
         });
     }
@@ -465,10 +443,6 @@ public class MainPanelController implements Initializable {
         Guest.GuestTable.filterGuests(searchText);
     }
 
-
-    public void checkAvailability(ActionEvent actionEvent) {
-    }
-
     public void listReservations(ActionEvent actionEvent) {
         ObservableList<Reservation> reservationList = DbConnection.getAllReservations(DbConnection.getConnection());
         clear();
@@ -508,7 +482,7 @@ public class MainPanelController implements Initializable {
 
         // Create UI components for making a reservation
         Label roomLabel = new Label("Select Room:");
-        ComboBox<Room> roomComboBox = new ComboBox<>(Room.RoomTable.getAllRooms());
+        ComboBox<Room> roomComboBox = new ComboBox<>(DbConnection.getAvailableRooms(DbConnection.getConnection()));
         roomComboBox.setPromptText("Choose a room");
         roomComboBox.setCellFactory(param -> new ListCell<>() {
             @Override
@@ -538,51 +512,147 @@ public class MainPanelController implements Initializable {
         clientComboBox.setPromptText("Choose a client");
 
         Label guestsLabel = new Label("Number of Guests:");
-        TextField guestsField = new TextField();
-        guestsField.setMaxWidth(200); // Adjusted width
+        ChoiceBox<Integer> guestsChoiceBox = new ChoiceBox<>();
+        guestsChoiceBox.getItems().addAll(1, 2, 3, 4); // Add the appropriate range of values
+        guestsChoiceBox.setDisable(true); // Disabled by default
+
+        // Event listener for room selection
+        roomComboBox.setOnAction(e -> {
+            Room selectedRoom = roomComboBox.getValue();
+            if (selectedRoom != null) {
+                int maxGuests = DbConnection.getRoomCapacityByNumber(DbConnection.getConnection(), selectedRoom.getRoomNumber());
+                guestsChoiceBox.setDisable(false); // Enable the ChoiceBox
+                guestsChoiceBox.setValue(1); // Set a default value
+                guestsChoiceBox.getItems().clear();
+                guestsChoiceBox.getItems().addAll(IntStream.rangeClosed(1, maxGuests).boxed().collect(Collectors.toList()));
+            }
+        });
 
         Label checkInLabel = new Label("Check-In Date:");
         DatePicker checkInDatePicker = new DatePicker();
+        checkInDatePicker.setDayCellFactory(picker -> new DateCell() {
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(date.isBefore(LocalDate.now().plusDays(1)));
+            }
+        });
 
         Label checkOutLabel = new Label("Check-Out Date:");
         DatePicker checkOutDatePicker = new DatePicker();
+        checkOutDatePicker.setDayCellFactory(picker -> new DateCell() {
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                LocalDate checkInDate = checkInDatePicker.getValue();
+                setDisable(date.isBefore(checkInDate) || date.isEqual(checkInDate));
+            }
+        });
+
+        // Event handler for check-in date selection
+        checkInDatePicker.setOnAction(e -> {
+            LocalDate checkInDate = checkInDatePicker.getValue();
+            LocalDate checkOutDate = checkOutDatePicker.getValue();
+
+            if (checkOutDate != null && checkInDate != null && checkInDate.isBefore(checkOutDate)) {
+                // Update the available dates in the check-out date picker
+                checkOutDatePicker.setDayCellFactory(picker -> new DateCell() {
+                    public void updateItem(LocalDate date, boolean empty) {
+                        super.updateItem(date, empty);
+                        setDisable(date.isBefore(checkInDate) || date.isEqual(checkInDate));
+                    }
+                });
+            }
+        });
+
+        // Event handler for check-out date selection
+        checkOutDatePicker.setOnAction(e -> {
+            LocalDate checkInDate = checkInDatePicker.getValue();
+            LocalDate checkOutDate = checkOutDatePicker.getValue();
+
+            if (checkInDate != null && checkOutDate.isAfter(checkInDate)) {
+                // Update the available dates in the check-in date picker
+                checkInDatePicker.setDayCellFactory(picker -> new DateCell() {
+                    public void updateItem(LocalDate date, boolean empty) {
+                        super.updateItem(date, empty);
+                        setDisable(date.isBefore(LocalDate.now().plusDays(1)) || date.isAfter(checkOutDate));
+                    }
+                });
+            }
+        });
 
         Button reserveButton = new Button("Make Reservation");
         reserveButton.setStyle("-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10; -fx-cursor: hand;");
         reserveButton.setAlignment(Pos.CENTER);
         reserveButton.setOnAction(e -> {
             // Validate inputs and make reservation
-            if (validateReservationInputs(roomComboBox, clientComboBox, guestsField, checkInDatePicker, checkOutDatePicker)) {
+            if (validateReservationInputs(roomComboBox, clientComboBox, guestsChoiceBox, checkInDatePicker, checkOutDatePicker)) {
                 Room selectedRoom = roomComboBox.getValue();
                 Guest selectedClient = clientComboBox.getValue();
-                int numberOfGuests = Integer.parseInt(guestsField.getText());
+                Integer numberOfGuests = guestsChoiceBox.getValue();  // Changed from int to Integer
+
+                // Check if date picker values are not null
                 LocalDate checkInDate = checkInDatePicker.getValue();
                 LocalDate checkOutDate = checkOutDatePicker.getValue();
 
-                // Additional logic for making a reservation based on selected inputs
-                // Example: Reservation reservation = new Reservation(selectedRoom.getRoomNumber(), selectedClient.getGuestId(), numberOfGuests, checkInDate, checkOutDate);
+                // Create a Reservation object
+                Reservation reservation = new Reservation();
+                reservation.setReferenceNumber(Reservation.ReservationGenerator.generateUniqueReservationReference());
+                reservation.setRoomNumber(selectedRoom.getRoomNumber());
+                reservation.setCheckinDate(Date.valueOf(checkInDate));
+                reservation.setCheckoutDate(Date.valueOf(checkOutDate));
+                reservation.setGuestId(selectedClient.getGuestID());
+                reservation.setNumberOfGuests(numberOfGuests);
+                reservation.setReservationStatus("Not Confirmed");
 
-                // Validate logical dates
-                if (checkInDate.isBefore(LocalDate.now()) || checkOutDate.isBefore(LocalDate.now()) || checkOutDate.isBefore(checkInDate)) {
-                    showDateAlert();
-                } else {
-                    // Display success message or handle the reservation process accordingly
-                    System.out.println("Reservation made successfully!");
-                    clearFields(roomComboBox, clientComboBox, guestsField, checkInDatePicker, checkOutDatePicker);
-                }
+                // Insert the reservation into the database
+                DbConnection.addReservation(DbConnection.getConnection(), reservation);
+
+                // Update the room availability status to "Booked" and associate the new guest
+                selectedRoom.setAvailabilityStatus("Booked");
+                selectedRoom.setGuestId(selectedClient.getGuestID());
+                DbConnection.updateRoom(DbConnection.getConnection(), selectedRoom);
+
+
+
+                AlertHelper.showAlert(Alert.AlertType.INFORMATION, reserveButton.getScene().getWindow(), "Reservation Success", "Reservation made successfully!");
+                clearFields(roomComboBox, clientComboBox, guestsChoiceBox, checkInDatePicker, checkOutDatePicker);
+                guestsChoiceBox.getItems().clear();
+                guestsChoiceBox.setDisable(true);
+
+
             }
         });
+
+        // Create a layout to hold the UI components
+        VBox reservationVBox = new VBox();
+        reservationVBox.setAlignment(Pos.CENTER);
+        reservationVBox.setSpacing(10);
+        reservationVBox.getChildren().addAll(
+                roomLabel, roomComboBox,
+                clientLabel, clientComboBox,
+                guestsLabel, guestsChoiceBox,
+                checkInLabel, checkInDatePicker,
+                checkOutLabel, checkOutDatePicker,
+                new Region(),
+                reserveButton
+        );
+
+        // Set the layout as the center of the borderPane
+        borderPane.setCenter(reservationVBox);
     }
 
-        private static void showDateAlert() {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Invalid Dates");
-            alert.setHeaderText(null);
-            alert.setContentText("Please select logical dates. Check-out date must be later than check-in date, and both should be in the future.");
-            alert.showAndWait();
-        }
 
-        private static boolean validateReservationInputs(Control... controls) {
+
+
+
+    private static void showDateAlert() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Invalid Dates");
+        alert.setHeaderText(null);
+        alert.setContentText("Please select logical dates. Check-out date must be later than check-in date, and both should be in the future.");
+        alert.showAndWait();
+    }
+
+    private static boolean validateReservationInputs(Control... controls) {
         boolean allFieldsFilled = true;
 
         for (Control control : controls) {
@@ -592,9 +662,14 @@ public class MainPanelController implements Initializable {
             } else if (control instanceof TextField && ((TextField) control).getText().isEmpty()) {
                 highlightField(control);
                 allFieldsFilled = false;
-            } else if (control instanceof DatePicker && ((DatePicker) control).getValue() == null) {
-                highlightField(control);
-                allFieldsFilled = false;
+            } else if (control instanceof DatePicker) {
+                LocalDate dateValue = ((DatePicker) control).getValue();
+                if (dateValue == null || dateValue.isBefore(LocalDate.now())) {
+                    highlightField(control);
+                    allFieldsFilled = false;
+                } else {
+                    removeHighlight(control);
+                }
             } else {
                 removeHighlight(control);
             }
@@ -606,6 +681,7 @@ public class MainPanelController implements Initializable {
 
         return allFieldsFilled;
     }
+
 
     private static void highlightField(Control control) {
         control.setStyle("-fx-border-color: red;");

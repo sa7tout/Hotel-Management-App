@@ -215,19 +215,59 @@ public class DbConnection {
         return roomList;
     }
 
+    public static ObservableList<Room> getAvailableRooms(Connection connection) {
+        ObservableList<Room> roomList = FXCollections.observableArrayList();
+        String query = "SELECT * FROM rooms WHERE availability_status = 'available'";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int roomNumber = resultSet.getInt("room_number");
+                    String roomType = resultSet.getString("room_type");
+                    int capacity = resultSet.getInt("capacity");
+                    String amenitiesString = resultSet.getString("amenities");
+                    List<String> amenities = Arrays.asList(amenitiesString.split(","));
+                    String availabilityStatus = resultSet.getString("availability_status");
+                    double pricePerNight = resultSet.getDouble("price_per_night");
+                    int guestId = resultSet.getInt("guest_id");
+
+                    Room room = new Room(roomNumber, roomType, capacity, amenities, availabilityStatus, pricePerNight, guestId);
+                    roomList.add(room);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return roomList;
+    }
+
+
     public static void updateRoom(Connection connection, Room room) {
-        String updateQuery = "UPDATE rooms SET availability_status = ?, guest_id = ? WHERE room_number = ?";
+        String updateQuery;
+
+        if (room.getGuestId() == 0) {
+            // If guest ID is 0, update availability status without assigning a guest
+            updateQuery = "UPDATE rooms SET availability_status = 'Available', guest_id = NULL WHERE room_number = ?";
+        } else {
+            // If guest ID is not 0, update availability status and assign the guest
+            updateQuery = "UPDATE rooms SET availability_status = 'Booked', guest_id = ? WHERE room_number = ?";
+        }
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
-            preparedStatement.setString(1, room.getAvailabilityStatus());
-            preparedStatement.setInt(2, room.getGuestId());
-            preparedStatement.setInt(3, room.getRoomNumber());
+            if (room.getGuestId() != 0) {
+                preparedStatement.setInt(1, room.getGuestId());
+                preparedStatement.setInt(2, room.getRoomNumber());
+            } else {
+                preparedStatement.setInt(1, room.getRoomNumber());
+            }
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace(); // Handle the exception according to your application's error handling strategy
         }
     }
+
 
     public static ObservableList<Reservation> getAllReservations(Connection connection) {
         ObservableList<Reservation> reservationList = FXCollections.observableArrayList();
@@ -237,15 +277,13 @@ public class DbConnection {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     int reservationId = resultSet.getInt("reservation_id");
+                    String referenceNumber = resultSet.getString("reference_number");
                     int roomNumber = resultSet.getInt("room_number");
                     Date checkinDate = resultSet.getDate("checkin_date");
                     Date checkoutDate = resultSet.getDate("checkout_date");
                     int guestId = resultSet.getInt("guest_id");
                     int numberOfGuests = resultSet.getInt("number_of_guests");
                     String reservationStatus = resultSet.getString("reservation_status");
-
-                    // Use ReservationGenerator to generate a unique reference number
-                    String referenceNumber = Reservation.ReservationGenerator.generateUniqueReservationReference();
 
                     Reservation reservation = new Reservation(reservationId, referenceNumber, roomNumber, checkinDate,
                             checkoutDate, guestId, numberOfGuests, reservationStatus);
@@ -258,6 +296,7 @@ public class DbConnection {
 
         return reservationList;
     }
+
 
 
     public static void updateReservation(Connection connection, Reservation reservation) {
@@ -306,9 +345,31 @@ public class DbConnection {
             e.printStackTrace();
         }
     }
+    public static int getRoomCapacityByNumber(Connection connection, int roomNumber) {
+        String query = "SELECT capacity FROM rooms WHERE room_number = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, roomNumber);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("capacity");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0; // Return a default value or handle the absence of data as needed
+    }
 
+    public static void deleteReservationByReferenceNumber(Connection connection, String referenceNumber) {
+        String query = "DELETE FROM reservations WHERE reference_number = ?";
 
-
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, referenceNumber);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 

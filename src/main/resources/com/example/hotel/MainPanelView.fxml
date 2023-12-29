@@ -70,8 +70,6 @@
                         <VBox spacing="5" style="-fx-background-color: #404040;">
                            <!-- Add Room Button -->
                            <Button text="Add Room" onAction="#addRoom" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
-                           <!-- Check Room Availability Button -->
-                           <Button text="Check Availability" onAction="#checkAvailability" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
                            <!-- List Rooms Button -->
                            <Button text="List Rooms" onAction="#listRooms" style="-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10;-fx-cursor: hand;"/>
                            <!-- Other room management options can be added here -->

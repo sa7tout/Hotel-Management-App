@@ -417,6 +417,8 @@ public class Employee {
 
             ObservableList<Employee> updatedEmployeeList = DbConnection.getAllEmployees(DbConnection.getConnection());
 
+            Employee.EmployeeTable.initialize();
+
             Employee.EmployeeTable.getEmployeeTable().setItems(updatedEmployeeList);
 
             AlertHelper.showAlert(Alert.AlertType.INFORMATION, null, "Success", "Employee added successfully!");}
