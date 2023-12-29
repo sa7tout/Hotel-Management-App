@@ -28,10 +28,10 @@ public class Room {
     private SimpleStringProperty amenities;
     private SimpleStringProperty availabilityStatus;
     private SimpleDoubleProperty pricePerNight;
-    private int guestId; // New attribute to associate a guest with a room
+    private Integer guestId; // New attribute to associate a guest with a room
 
     public Room(int roomNumber, String roomType, int capacity, List<String> amenities,
-                String availabilityStatus, double pricePerNight, int guestId) {
+                String availabilityStatus, double pricePerNight, Integer guestId) {
         this.roomNumber = new SimpleIntegerProperty(roomNumber);
         this.roomType = new SimpleStringProperty(roomType);
         this.capacity = new SimpleIntegerProperty(capacity);
@@ -89,7 +89,7 @@ public class Room {
         this.pricePerNight.set(pricePerNight);
     }
 
-    public int getGuestId() {
+    public Integer getGuestId() {
         return guestId;
     }
 
@@ -612,6 +612,15 @@ public class Room {
             // Add more labels for other room details
 
             return gridPane;
+        }
+
+        public static void addNewRoom(Room room) {
+            // Add the new room to the database
+            DbConnection.addRoom(DbConnection.getConnection(), room);
+
+            // Update the roomTable
+            originalRoomList = getAllRooms();
+            roomTable.setItems(originalRoomList);
         }
 
     }

@@ -1,5 +1,6 @@
 package com.example.hotel;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -475,7 +476,134 @@ public class MainPanelController implements Initializable {
     }
 
     public void addRoom(ActionEvent actionEvent) {
+        clear();
+
+        Label roomNumberLabel = new Label("Room Number:");
+        TextField roomNumberField = new TextField();
+        roomNumberField.setMaxWidth(200);
+
+        Label roomTypeLabel = new Label("Room Type:");
+        ComboBox<String> roomTypeChoiceBox = new ComboBox<>(FXCollections.observableArrayList("Standard", "Deluxe", "Suite"));
+        roomTypeChoiceBox.setPromptText("Select Room Type");
+
+
+        Label capacityLabel = new Label("Capacity:");
+        TextField capacityField = new TextField();
+        capacityField.setMaxWidth(200);
+
+        Label amenitiesLabel = new Label("Amenities:");
+        TextField amenitiesField = new TextField();
+        amenitiesField.setMaxWidth(200);
+
+        // Adding a listener to the roomTypeChoiceBox
+        roomTypeChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            // Update amenities and capacity based on the selected room type
+            if ("Standard".equals(newValue)) {
+                amenitiesField.setText("Wi-Fi, TV, Bathroom");
+                capacityField.setText("2");
+            } else if ("Deluxe".equals(newValue)) {
+                amenitiesField.setText("Wi-Fi, TV, Bathroom, Balcony");
+                capacityField.setText("3");
+            } else if ("Suite".equals(newValue)) {
+                amenitiesField.setText("Wi-Fi, TV, Bathroom, Living Room, Kitchenette");
+                capacityField.setText("4");
+            }
+        });
+
+        Label availabilityStatusLabel = new Label("Availability Status:");
+        ComboBox<String> availabilityStatusComboBox = new ComboBox<>(FXCollections.observableArrayList("Available", "Booked", "Not Available"));
+        availabilityStatusComboBox.setPromptText("Select Availability Status");
+
+        Label pricePerNightLabel = new Label("Price per Night ($):");
+        TextField pricePerNightField = new TextField();
+        pricePerNightField.setMaxWidth(200);
+
+        Button addButton = new Button("Add Room");
+        addButton.setStyle("-fx-background-color: #2b2a26; -fx-text-fill: #f0f0f0; -fx-font-size: 12px; -fx-padding: 5 10; -fx-cursor: hand;");
+        addButton.setOnAction(e -> {
+            if (validateRoomInputs(roomNumberField, roomTypeChoiceBox, capacityField, amenitiesField, availabilityStatusComboBox, pricePerNightField)) {
+                int roomNumber = Integer.parseInt(roomNumberField.getText());
+
+                // Check if the room number already exists
+                if (isRoomNumberExists(roomNumber)) {
+                    showRoomExistsAlert();
+                } else {
+                    String roomType = roomTypeChoiceBox.getValue();
+                    int capacity = Integer.parseInt(capacityField.getText());
+                    List<String> amenities = Arrays.asList(amenitiesField.getText().split(","));
+                    String availabilityStatus = availabilityStatusComboBox.getValue();
+                    double pricePerNight = Double.parseDouble(pricePerNightField.getText());
+
+                    // Directly add the room to the database
+                    // Assuming guestId is of type Integer in your Room class
+                    Room room = new Room(roomNumber, roomType, capacity, amenities, availabilityStatus, pricePerNight, null);
+
+                    DbConnection.addRoom(DbConnection.getConnection(), room);
+
+                    ObservableList<Room> roomList = Room.RoomTable.getAllRooms();
+                    Room.RoomTable.initialize(); // Initialize the room table
+                    Room.RoomTable.getRoomTable().setItems(roomList);
+
+
+                    AlertHelper.showAlert(Alert.AlertType.INFORMATION, null, "Success", "Room added successfully!");
+                }
+            }
+        });
+
+        VBox formVBox = new VBox();
+        formVBox.setAlignment(Pos.CENTER);
+        formVBox.setSpacing(10);
+        formVBox.getChildren().addAll(
+                roomNumberLabel, roomNumberField,
+                roomTypeLabel, roomTypeChoiceBox,
+                capacityLabel, capacityField,
+                amenitiesLabel, amenitiesField,
+                availabilityStatusLabel, availabilityStatusComboBox,
+                pricePerNightLabel, pricePerNightField,
+                new Region(),
+                addButton
+        );
+
+        borderPane.setCenter(formVBox);
     }
+
+    private boolean isRoomNumberExists(int roomNumber) {
+        List<Room> roomList = Room.RoomTable.getAllRooms();
+        return roomList.stream().anyMatch(room -> room.getRoomNumber() == roomNumber);
+    }
+
+    private void showRoomExistsAlert() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Room Already Exists");
+        alert.setHeaderText(null);
+        alert.setContentText("Room with the entered room number already exists. Please enter a different room number.");
+        alert.showAndWait();
+    }
+
+
+
+    private static boolean validateRoomInputs(Control... controls) {
+        boolean allFieldsFilled = true;
+
+        for (Control control : controls) {
+            if (control instanceof ChoiceBox && ((ChoiceBox<?>) control).getValue() == null) {
+                highlightField(control);
+                allFieldsFilled = false;
+            } else if (control instanceof TextField && ((TextField) control).getText().isEmpty()) {
+                highlightField(control);
+                allFieldsFilled = false;
+            } else {
+                removeHighlight(control);
+            }
+        }
+
+        if (!allFieldsFilled) {
+            showInputAlert();
+        }
+
+        return allFieldsFilled;
+    }
+
 
     public void makeReservation(ActionEvent actionEvent) {
         clear();

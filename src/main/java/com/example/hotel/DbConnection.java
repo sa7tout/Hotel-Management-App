@@ -242,6 +242,32 @@ public class DbConnection {
         return roomList;
     }
 
+    public static void addRoom(Connection connection, Room room) {
+        String query = "INSERT INTO rooms (room_number, room_type, capacity, amenities, availability_status, price_per_night, guest_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, room.getRoomNumber());
+            preparedStatement.setString(2, room.getRoomType());
+            preparedStatement.setInt(3, room.getCapacity());
+            preparedStatement.setString(4, String.join(",", room.getAmenities()));
+            preparedStatement.setString(5, room.getAvailabilityStatus());
+            preparedStatement.setDouble(6, room.getPricePerNight());
+
+            // Check if guestId is null before setting it in the statement
+            if (room.getGuestId() != null) {
+                preparedStatement.setInt(7, room.getGuestId());
+            } else {
+                preparedStatement.setNull(7, Types.INTEGER);
+            }
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
 
     public static void updateRoom(Connection connection, Room room) {
         String updateQuery;

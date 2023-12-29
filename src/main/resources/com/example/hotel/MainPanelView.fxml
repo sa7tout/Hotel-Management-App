@@ -65,7 +65,7 @@
                   </TitledPane>
 
                   <!-- TitledPane for managing room availability -->
-                  <TitledPane fx:id="roomPane" style="-fx-background-color: #404040;-fx-border-style: solid; -fx-border-width: 2; -fx-border-color: #404040;" text="Manage Room Availability">
+                  <TitledPane fx:id="roomPane" style="-fx-background-color: #404040;-fx-border-style: solid; -fx-border-width: 2; -fx-border-color: #404040;" text="Manage Rooms">
                      <content>
                         <VBox spacing="5" style="-fx-background-color: #404040;">
                            <!-- Add Room Button -->
