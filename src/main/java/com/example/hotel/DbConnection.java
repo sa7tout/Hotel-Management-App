@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import model.*;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -241,6 +242,44 @@ public class DbConnection {
 
         return roomList;
     }
+
+    public static List<Reservation> getReservationsByRoom(Connection connection, int roomNumber) {
+        List<Reservation> reservationList = new ArrayList<>();
+        String query = "SELECT * FROM reservations WHERE room_number = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, roomNumber);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int reservationId = resultSet.getInt("reservation_id");
+                    String referenceNumber = resultSet.getString("reference_number");
+                    int guestId = resultSet.getInt("guest_id");
+                    int numberOfGuests = resultSet.getInt("number_of_guests");
+                    Date checkinDate = resultSet.getDate("checkin_date");
+                    Date checkoutDate = resultSet.getDate("checkout_date");
+                    String reservationStatus = resultSet.getString("reservation_status");
+
+                    Reservation reservation = new Reservation();
+                    reservation.setReservationId(reservationId);
+                    reservation.setReferenceNumber(referenceNumber);
+                    reservation.setRoomNumber(roomNumber);
+                    reservation.setGuestId(guestId);
+                    reservation.setNumberOfGuests(numberOfGuests);
+                    reservation.setCheckinDate(checkinDate);
+                    reservation.setCheckoutDate(checkoutDate);
+                    reservation.setReservationStatus(reservationStatus);
+
+                    reservationList.add(reservation);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return reservationList;
+    }
+
+
 
     public static void addRoom(Connection connection, Room room) {
         String query = "INSERT INTO rooms (room_number, room_type, capacity, amenities, availability_status, price_per_night, guest_id) VALUES (?, ?, ?, ?, ?, ?, ?)";

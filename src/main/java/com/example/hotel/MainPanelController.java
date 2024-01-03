@@ -2,7 +2,6 @@ package com.example.hotel;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,12 +14,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -35,8 +32,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static model.Employee.EmployeeTable.filterEmployees;
-import static model.Employee.EmployeeTable.submitEmployeeDetails;
+import static model.Reservation.isDateInReservations;
 
 public class MainPanelController implements Initializable {
 
@@ -123,16 +119,6 @@ public class MainPanelController implements Initializable {
     @FXML
     private void clear() {
         borderPane.setCenter(null);
-    }
-
-    @FXML
-    private void loadFXML(String fileName) {
-        try {
-            Parent parent = FXMLLoader.load(getClass().getResource("/view/" + fileName + ".fxml"));
-            borderPane.setCenter(parent);
-        } catch (IOException ex) {
-            Logger.getLogger(MainPanelController.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     @FXML
@@ -610,7 +596,7 @@ public class MainPanelController implements Initializable {
 
         // Create UI components for making a reservation
         Label roomLabel = new Label("Select Room:");
-        ComboBox<Room> roomComboBox = new ComboBox<>(DbConnection.getAvailableRooms(DbConnection.getConnection()));
+        ComboBox<Room> roomComboBox = new ComboBox<>(DbConnection.getAllRooms(DbConnection.getConnection()));
         roomComboBox.setPromptText("Choose a room");
         roomComboBox.setCellFactory(param -> new ListCell<>() {
             @Override
@@ -644,17 +630,6 @@ public class MainPanelController implements Initializable {
         guestsChoiceBox.getItems().addAll(1, 2, 3, 4); // Add the appropriate range of values
         guestsChoiceBox.setDisable(true); // Disabled by default
 
-        // Event listener for room selection
-        roomComboBox.setOnAction(e -> {
-            Room selectedRoom = roomComboBox.getValue();
-            if (selectedRoom != null) {
-                int maxGuests = DbConnection.getRoomCapacityByNumber(DbConnection.getConnection(), selectedRoom.getRoomNumber());
-                guestsChoiceBox.setDisable(false); // Enable the ChoiceBox
-                guestsChoiceBox.setValue(1); // Set a default value
-                guestsChoiceBox.getItems().clear();
-                guestsChoiceBox.getItems().addAll(IntStream.rangeClosed(1, maxGuests).boxed().collect(Collectors.toList()));
-            }
-        });
 
         Label checkInLabel = new Label("Check-In Date:");
         DatePicker checkInDatePicker = new DatePicker();
@@ -667,6 +642,7 @@ public class MainPanelController implements Initializable {
 
         Label checkOutLabel = new Label("Check-Out Date:");
         DatePicker checkOutDatePicker = new DatePicker();
+        checkOutDatePicker.setDisable(true);
         checkOutDatePicker.setDayCellFactory(picker -> new DateCell() {
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
@@ -675,12 +651,50 @@ public class MainPanelController implements Initializable {
             }
         });
 
+        // Event listener for room selection
+        roomComboBox.setOnAction(e -> {
+            Room selectedRoom = roomComboBox.getValue();
+            if (selectedRoom != null) {
+                // Check existing reservations for the selected room
+                List<Reservation> existingReservations = DbConnection.getReservationsByRoom(DbConnection.getConnection(), selectedRoom.getRoomNumber());
+                checkInDatePicker.setValue(null);
+                checkOutDatePicker.setValue(null);
+                checkOutDatePicker.setDisable(true);
+
+                int maxGuests = DbConnection.getRoomCapacityByNumber(DbConnection.getConnection(), selectedRoom.getRoomNumber());
+                guestsChoiceBox.setDisable(false); // Enable the ChoiceBox
+                guestsChoiceBox.setValue(1); // Set a default value
+                guestsChoiceBox.getItems().clear();
+                guestsChoiceBox.getItems().addAll(IntStream.rangeClosed(1, maxGuests).boxed().collect(Collectors.toList()));
+
+                // Disable date ranges in check-in date picker
+                checkInDatePicker.setDayCellFactory(picker -> new DateCell() {
+                    public void updateItem(LocalDate date, boolean empty) {
+                        super.updateItem(date, empty);
+                        setDisable(date.isBefore(LocalDate.now().plusDays(1)) || isDateInReservations(date, existingReservations));
+                    }
+                });
+
+                // Disable date ranges in check-out date picker
+                checkOutDatePicker.setDayCellFactory(picker -> new DateCell() {
+                    public void updateItem(LocalDate date, boolean empty) {
+                        super.updateItem(date, empty);
+                        LocalDate checkInDate = checkInDatePicker.getValue();
+                        if (checkInDate != null) {
+                            setDisable(date.isBefore(checkInDate) || date.isEqual(checkInDate));
+                        }
+                    }
+                });
+            }
+        });
+
         // Event handler for check-in date selection
         checkInDatePicker.setOnAction(e -> {
             LocalDate checkInDate = checkInDatePicker.getValue();
-            LocalDate checkOutDate = checkOutDatePicker.getValue();
+            if (checkInDate != null) {
+                // Enable the checkOutDatePicker
+                checkOutDatePicker.setDisable(false);
 
-            if (checkOutDate != null && checkInDate != null && checkInDate.isBefore(checkOutDate)) {
                 // Update the available dates in the check-out date picker
                 checkOutDatePicker.setDayCellFactory(picker -> new DateCell() {
                     public void updateItem(LocalDate date, boolean empty) {

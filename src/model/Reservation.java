@@ -613,5 +613,18 @@ public class Reservation {
             }
 
         }
+
     }
+    public static boolean isDateInReservations(LocalDate date, List<Reservation> reservations) {
+        for (Reservation reservation : reservations) {
+            LocalDate checkIn = reservation.getCheckinDate().toLocalDate();
+            LocalDate checkOut = reservation.getCheckoutDate().toLocalDate();
+
+            if ((date.isEqual(checkIn) || date.isAfter(checkIn)) && date.isBefore(checkOut)) {
+                return true; // Date is within an existing reservation
+            }
+        }
+        return false; // Date is not in any existing reservation
+    }
+
 }
