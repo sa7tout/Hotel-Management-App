@@ -408,6 +408,9 @@ public class Room {
                         reservation.setRoomNumber(room.getRoomNumber());
                         reservation.setCheckinDate(Date.valueOf(checkInDate));
                         reservation.setCheckoutDate(Date.valueOf(checkOutDate));
+                        reservation.setGuestId(selectedGuest.getGuestID());
+                        reservation.setNumberOfGuests(room.getCapacity());
+                        reservation.setReservationStatus("Confirmed");
 
                         // Set other reservation details as needed
 
@@ -452,6 +455,9 @@ public class Room {
                                 reservation.setRoomNumber(room.getRoomNumber());
                                 reservation.setCheckinDate(Date.valueOf(checkInDate));
                                 reservation.setCheckoutDate(Date.valueOf(checkOutDate));
+                                reservation.setGuestId(newGuest.getGuestID());
+                                reservation.setNumberOfGuests(room.getCapacity());
+                                reservation.setReservationStatus("Confirmed");
 
                                 // Set other reservation details as needed
 

@@ -363,7 +363,6 @@ public class DbConnection {
     }
 
 
-
     public static void updateReservation(Connection connection, Reservation reservation) {
         String updateQuery = "UPDATE reservations SET reference_number=?, room_number=?, checkin_date=?, " +
                 "checkout_date=?, guest_id=?, number_of_guests=?, reservation_status=? WHERE reservation_id=?";

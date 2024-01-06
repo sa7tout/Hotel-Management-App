@@ -575,6 +575,9 @@ public class MainPanelController implements Initializable {
             if (control instanceof ChoiceBox && ((ChoiceBox<?>) control).getValue() == null) {
                 highlightField(control);
                 allFieldsFilled = false;
+            } else if (control instanceof ComboBox && ((ComboBox<?>) control).getValue() == null) {
+                highlightField(control);
+                allFieldsFilled = false;
             } else if (control instanceof TextField && ((TextField) control).getText().isEmpty()) {
                 highlightField(control);
                 allFieldsFilled = false;
@@ -589,6 +592,7 @@ public class MainPanelController implements Initializable {
 
         return allFieldsFilled;
     }
+
 
 
     public void makeReservation(ActionEvent actionEvent) {
