@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 29, 2023 at 11:12 PM
+-- Generation Time: Jan 06, 2024 at 02:53 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -79,7 +79,6 @@ INSERT INTO `employees` (`employee_id`, `first_name`, `last_name`, `email`, `dep
 (8, 'Laila', 'Ouahbi', 'laila.ouahbi@example.com', 'Finance', 'Financial Analyst', '2022-08-09'),
 (9, 'Youssef', 'El Haddad', 'youssef.haddad@example.com', 'Marketing', 'Marketing Manager', '2021-09-30'),
 (10, 'Nawal', 'Chahbouni', 'nawal.chahbouni@example.com', 'Sales', 'Sales Representative', '2022-10-17'),
-(11, 'Karim', 'Lahlou', 'karim.lahlou@example.com', 'Sales', 'Sales Representative', '2022-08-15'),
 (12, 'Hiba', 'Arbel', 'hiba.arbel@example.com', 'Marketing', 'Coordinator', '2022-09-01'),
 (13, 'Aya', 'Elmghari', 'aya.elmghari@example.com', 'IT', 'Developer', '2021-10-12'),
 (14, 'Sofia', 'Tazi', 'sofia.tazi@example.com', 'Finance', 'Accountant', '2022-03-20'),
@@ -150,7 +149,7 @@ CREATE TABLE `guests` (
 INSERT INTO `guests` (`guest_id`, `first_name`, `last_name`, `email`, `password`) VALUES
 (2, 'Amina', 'ElFassi', 'amina.elfassi@example.com', 'password456'),
 (3, 'Youssef', 'Makrane', 'youssef.makrane@example.com', 'password789'),
-(4, 'Fatima', 'ElIdrissi', 'fatima.elidrissi@example.com', ''),
+(4, 'Fatima', 'ElIdrissi', 'fatima.elidrissi@example.com', 'password745'),
 (5, 'Ahmed', 'Bouaziz', 'ahmed.bouaziz@example.com', 'passworddef'),
 (6, 'Hafsa', 'Amrani', 'hafsa.amrani@example.com', 'passwordeg'),
 (7, 'Abdelali', 'Chakir', 'abdelali.chakir@example.com', 'passwordhij'),
@@ -219,7 +218,8 @@ INSERT INTO `guests` (`guest_id`, `first_name`, `last_name`, `email`, `password`
 (71, 'Rachid', 'Tetouan', 'rachid.tetouan@example.com', 'passwordnopqr'),
 (73, 'Mohammed', 'Safi', 'mohammed.safi@example.com', 'passwordxyz12'),
 (74, 'Abdelmajid', 'Kasside', 'abdelmajid.kasside@example.com', 'password777'),
-(75, 'testclientname', 'testclientlastname', 'testclient@gmail.com', 'passowrdclient1234');
+(75, 'testclientname', 'testclientlastname', 'testclient@gmail.com', 'passowrdclient1234'),
+(78, 'Youness', 'Kasside', 'younesqassid@outlook.com', 'Younesqassid1234$');
 
 -- --------------------------------------------------------
 
@@ -256,7 +256,13 @@ INSERT INTO `reservations` (`reservation_id`, `reference_number`, `room_number`,
 (12, 'RES00012', 35, '2024-12-15', '2024-12-08', 67, 4, 'Confirmed'),
 (13, 'RES2023122715562445', 10, '2023-12-28', '2024-01-05', 9, 2, 'Not Confirmed'),
 (14, 'RES202312271613051', 1, '2024-01-03', '2024-01-05', 56, 2, 'Not Confirmed'),
-(15, 'RES202312271620411', 3, '2023-12-28', '2024-01-12', 23, 2, 'Not Confirmed');
+(15, 'RES202312271620411', 3, '2023-12-28', '2024-01-12', 23, 2, 'Not Confirmed'),
+(18, 'RES202401051144001', 4, '2024-01-05', '2024-01-06', 78, 2, 'Confirmed'),
+(19, 'RES202401051154572', 13, '2024-01-05', '2024-01-06', 78, 2, 'Confirmed'),
+(39, 'RES202401051929423', 22, '2024-01-05', '2024-01-06', 78, 2, 'Confirmed'),
+(40, 'RES202401051948161', 7, '2024-01-05', '2024-01-06', 78, 2, 'Confirmed'),
+(41, 'RES202401052009434', 31, '2024-01-05', '2024-01-06', 78, 2, 'Confirmed'),
+(42, 'RES202401052110017', 4, '2024-01-23', '2024-01-24', 78, 2, 'Confirmed');
 
 -- --------------------------------------------------------
 
@@ -297,7 +303,7 @@ INSERT INTO `rooms` (`room_number`, `room_type`, `capacity`, `amenities`, `avail
 (16, 'Suite', 4, 'Wi-Fi, TV, Bathroom, Living Room, Kitchenette', 'Available', 200, NULL),
 (17, 'Suite', 4, 'Wi-Fi, TV, Bathroom, Living Room, Kitchenette', 'Booked', 200, 27),
 (18, 'Suite', 4, 'Wi-Fi, TV, Bathroom, Living Room, Kitchenette', 'Not Available', 200, NULL),
-(19, 'Standard', 2, 'Wi-Fi, TV, Bathroom', 'Available', 100, NULL),
+(19, 'Standard', 2, 'Wi-Fi, TV, Bathroom', 'Booked', 100, NULL),
 (20, 'Standard', 2, 'Wi-Fi, TV, Bathroom', 'Booked', 100, 39),
 (21, 'Standard', 2, 'Wi-Fi, TV, Bathroom', 'Not Available', 100, NULL),
 (22, 'Deluxe', 3, 'Wi-Fi, TV, Bathroom, Balcony', 'Available', 150, NULL),
@@ -306,7 +312,7 @@ INSERT INTO `rooms` (`room_number`, `room_type`, `capacity`, `amenities`, `avail
 (25, 'Suite', 4, 'Wi-Fi, TV, Bathroom, Living Room, Kitchenette', 'Available', 200, NULL),
 (26, 'Suite', 4, 'Wi-Fi, TV, Bathroom, Living Room, Kitchenette', 'Booked', 200, 47),
 (27, 'Suite', 4, 'Wi-Fi, TV, Bathroom, Living Room, Kitchenette', 'Not Available', 200, NULL),
-(28, 'Standard', 2, 'Wi-Fi, TV, Bathroom', 'Available', 100, NULL),
+(28, 'Standard', 2, 'Wi-Fi, TV, Bathroom', 'Booked', 100, NULL),
 (29, 'Standard', 2, 'Wi-Fi, TV, Bathroom', 'Booked', 100, 59),
 (30, 'Standard', 2, 'Wi-Fi, TV, Bathroom', 'Not Available', 100, NULL),
 (31, 'Deluxe', 3, 'Wi-Fi, TV, Bathroom, Balcony', 'Available', 150, NULL),
@@ -339,6 +345,45 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `username`, `password`, `full_name`, `email`, `role`, `created_at`) VALUES
 (1, 'admin', 'adminpass', 'YOUNESS KASSIDE', 'kasside.youness@emsi-edu.ma', 'ADMIN', '2023-12-12 20:24:49');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_tokens`
+--
+
+CREATE TABLE `user_tokens` (
+  `id` int(11) NOT NULL,
+  `user_id` varchar(255) NOT NULL,
+  `remember_me_token` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_tokens`
+--
+
+INSERT INTO `user_tokens` (`id`, `user_id`, `remember_me_token`) VALUES
+(1, 'amina.elfassi@example.com', '65d4dbdb-ff09-48b0-9570-764cab5d12ca'),
+(2, 'younesqassid@outlook.com', '06266c9e-aef2-462a-ae18-74e612d82110'),
+(3, 'younesqassid@outlook.com', 'bd45550e-8790-4716-96a4-d2abb58cf9a9'),
+(4, 'younesqassid@outlook.com', '356208b3-aa76-457a-a5b8-d7d76b52c9e4'),
+(5, 'younesqassid@outlook.com', 'f0964e47-b3b0-4588-b665-f61d5e8c4575'),
+(6, 'younesqassid@outlook.com', 'cd52eda7-0392-4df2-85e5-809a59f707a5'),
+(7, 'younesqassid@outlook.com', '85808570-68c9-43fd-94a3-3ee4813670c9'),
+(8, 'younesqassid@outlook.com', 'b60cdf37-054a-4477-a294-b8d0287188cd'),
+(9, 'younesqassid@outlook.com', '9e77d899-efe2-462a-ba59-57f43a939fc2'),
+(10, 'younesqassid@outlook.com', '18742e2e-255a-4164-94b6-6c8767c4381b'),
+(11, 'younesqassid@outlook.com', '979ab05a-9f34-4e3e-b97f-11de152956bc'),
+(12, 'younesqassid@outlook.com', '517ed3f3-b31b-4a68-ad3a-386b8b13fe6b'),
+(13, 'younesqassid@outlook.com', 'fc33b942-1462-4d41-bbfc-c4712c3ce38c'),
+(14, 'younesqassid@outlook.com', '31c6d1ac-9bb3-4607-818b-088e2a506653'),
+(15, 'younesqassid@outlook.com', 'c62f137a-2c03-43ee-a312-8faa1271865b'),
+(16, 'younesqassid@outlook.com', '2f2462f2-68e3-436a-8994-9264554cb900'),
+(17, 'younesqassid@outlook.com', '34534f97-610d-4c33-a572-c407c3712c64'),
+(18, 'younesqassid@outlook.com', '550fe7e0-e41a-4bfd-8fd6-ed997fb3666f'),
+(19, 'younesqassid@outlook.com', '3b3647e1-57cb-47c1-a642-f645d8bb5371'),
+(20, 'younesqassid@outlook.com', '5494210e-5c44-448e-8bda-68b78f061c4d'),
+(21, 'younesqassid@outlook.com', 'f30079bd-03c8-470b-8596-98415be4f448');
 
 --
 -- Indexes for dumped tables
@@ -383,6 +428,13 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `unique_email` (`email`);
 
 --
+-- Indexes for table `user_tokens`
+--
+ALTER TABLE `user_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_user_tokens_user` (`user_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -390,25 +442,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `employee_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `employee_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT for table `guests`
 --
 ALTER TABLE `guests`
-  MODIFY `guest_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `guest_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
 -- AUTO_INCREMENT for table `reservations`
 --
 ALTER TABLE `reservations`
-  MODIFY `reservation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `reservation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
   MODIFY `room_number` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=100;
+
+--
+-- AUTO_INCREMENT for table `user_tokens`
+--
+ALTER TABLE `user_tokens`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Constraints for dumped tables
@@ -426,6 +484,12 @@ ALTER TABLE `reservations`
 --
 ALTER TABLE `rooms`
   ADD CONSTRAINT `rooms_ibfk_1` FOREIGN KEY (`guest_id`) REFERENCES `guests` (`guest_id`);
+
+--
+-- Constraints for table `user_tokens`
+--
+ALTER TABLE `user_tokens`
+  ADD CONSTRAINT `fk_user_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `guests` (`email`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
